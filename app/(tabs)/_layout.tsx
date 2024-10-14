@@ -5,6 +5,9 @@ import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+const Stack = createStackNavigator();
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
@@ -14,6 +17,8 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
       }}>
+      <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
       <Tabs.Screen
         name="index"
         options={{
@@ -23,6 +28,17 @@ export default function TabLayout() {
           ),
         }}
       />
+        <Tabs.Screen
+        name="page"
+        options={{
+          title: 'Page',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+          ),
+        }}
+      />
+      </Stack.Navigator>
+      </NavigationContainer>
       <Tabs.Screen
         name="explore"
         options={{
