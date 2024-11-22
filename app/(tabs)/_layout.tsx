@@ -38,6 +38,7 @@ export default function TabLayout() {
         }}
       />
       </Stack.Navigator>
+      
       </NavigationContainer>
       <Tabs.Screen
         name="explore"

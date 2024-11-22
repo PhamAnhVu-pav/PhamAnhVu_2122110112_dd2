@@ -1,49 +1,17 @@
 import React, { useState } from 'react';
 import {
-  SafeAreaView,
   View,
-  FlatList,
   StyleSheet,
   Text,
-  StatusBar,
+  Modal,
   Image,
   TouchableOpacity,
-  Modal,
-  TextInput,
+  FlatList,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-// Sample product data
-const DATA = [
-  {
-    id: 'category-1',
-    title: 'Tất Cả Sản Phẩm',
-    products: [
-      {
-        id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-        title: 'Giày Vans Trắng',
-        description: 'Mô tả cho sản phẩm cafe nguyên chất.',
-        attributes: 'Hương vị đậm đà, 100% tự nhiên',
-        sugarPercentage: '0%',
-        icePercentage: '0%',
-        sizes: ['38', '39','40','41','42','43'], // Added sizes
-        relatedProducts: [
-          { title: 'Cafe chuẩn vị', imageUrl: require('../../assets/images/d1.jpg') },
-          { title: 'Cafe rang xay', imageUrl: require('../../assets/images/d2.jpg') },
-        ],
-        reviews: [
-          { user: 'Nguyen Van A', comment: 'Giày!', rating: 5 },
-          { user: 'Tran Thi B', comment: 'Hơi đắt nhưng đáng.', rating: 4 },
-        ],
-        imageUrl: require('../../assets/images/d2.jpg'), // Ensure this path is correct
-        price: '245.000 VNĐ',
-      },
-      // Add more products here...
-    ],
-  },
-];
-
-const ProductDetail = ({ visible, onClose, product, onAddToCart }) => {
+const ProductDetail = ({ visible, onClose, product, onAddToCart, relatedProducts }) => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
@@ -56,90 +24,90 @@ const ProductDetail = ({ visible, onClose, product, onAddToCart }) => {
       setQuantity(quantity - 1);
     }
   };
+  const relatedProductsArray = [
+    {
+      id: 1,
+      title: 'Related Product 1',
+      imageUrl: require('../../assets/images/d3.jpg'),
+    },
+    {
+      id: 2,
+      title: 'Related Product 2',
+      imageUrl: require('../../assets/images/d2.jpg'),
+    },
+    {
+      id: 3,
+      title: 'Related Product 3',
+      imageUrl: require('../../assets/images/d1.jpg'),
+    },
+    // Add more related products as needed
+  ];
+  const handleAddToCart = () => {
+    onAddToCart(product, quantity);
+    Alert.alert("Thông báo", "Sản phẩm đã được thêm vào giỏ hàng!");
+  };
 
   return (
-    <Modal transparent={true} visible={visible} animationType="slide">
+    <Modal animationType="slide" transparent visible={visible}>
       <View style={styles.modalContainer}>
-        <Image source={product.imageUrl} style={styles.fullImage} />
-
         <View style={styles.modalContent}>
-          <Text style={styles.productDetailTitle}>Chi tiết sản phẩm</Text>
-          <Text style={styles.modalTitle}>{product.title}</Text>
-         
-          <Text style={styles.modalSugar}>Giày chính hảng{product.sugarPercentage}</Text>
-          
-          
-          {/* Size Selection */}
-          <Text style={styles.modalSize}>Chọn size:</Text>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Icon name="close" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Image source={product.imageUrl} style={styles.productImage} />
+          <Text style={styles.productTitle}>{product.title}</Text>
+          <Text style={styles.productDescription}>{product.description}</Text>
+          <Text style={styles.productPrice}>{product.price}</Text>
+
           <View style={styles.sizeContainer}>
-            {product.sizes.map((size) => (
-              <TouchableOpacity
-                key={size}
-                onPress={() => setSelectedSize(size)}
-                style={[
-                  styles.sizeButton,
-                  selectedSize === size && styles.selectedSizeButton,
-                ]}
-              >
-                <Text style={styles.sizeText}>{size}</Text>
-              </TouchableOpacity>
-            ))}
+            <Text style={styles.sizeLabel}>Chọn kích cỡ:</Text>
+            <FlatList
+              data={['S', 'M', 'L', 'XL']}
+              horizontal
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.sizeButton,
+                    selectedSize === item && styles.selectedSizeButton,
+                  ]}
+                  onPress={() => setSelectedSize(item)}
+                >
+                  <Text style={styles.sizeButtonText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item}
+            />
           </View>
 
-          <Text style={styles.modalPrice}>{product.price}</Text>
-
           <View style={styles.quantityContainer}>
-            <TouchableOpacity onPress={decreaseQuantity} style={styles.button}>
-              <Text style={styles.buttonText}>-</Text>
+            <TouchableOpacity onPress={decreaseQuantity} style={styles.quantityButton}>
+              <Text style={styles.quantityButtonText}>-</Text>
             </TouchableOpacity>
             <Text style={styles.quantityText}>{quantity}</Text>
-            <TouchableOpacity onPress={increaseQuantity} style={styles.button}>
-              <Text style={styles.buttonText}>+</Text>
+            <TouchableOpacity onPress={increaseQuantity} style={styles.quantityButton}>
+              <Text style={styles.quantityButtonText}>+</Text>
             </TouchableOpacity>
           </View>
 
           <TouchableOpacity
-            onPress={() => {
-              if (selectedSize) {
-                onAddToCart({ ...product, size: selectedSize }, quantity);
-              }
-            }}
             style={styles.addToCartButton}
+            onPress={handleAddToCart}
           >
-            <Icon name="add-shopping-cart" size={20} color="#fff" />
-            <Text style={styles.buttonText}> Thêm vào giỏ hàng</Text>
+            <Text style={styles.addToCartButtonText}>Thêm vào giỏ hàng</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.modalButton} onPress={onClose}>
-            <Icon name="close" size={20} color="#fff" />
-            <Text style={styles.buttonText}> Đóng</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.relatedTitle}>Sản phẩm liên quan:</Text>
+          {/* Related Products Section */}
+          <Text style={styles.relatedProductsTitle}>Sản phẩm liên quan</Text>
           <FlatList
-            data={product.relatedProducts}
+            data={relatedProducts}
+            horizontal
             renderItem={({ item }) => (
-              <View style={styles.relatedItem}>
-                <Image source={item.imageUrl} style={styles.relatedImage} />
-                <Text style={styles.relatedProduct}>{item.title}</Text>
-              </View>
+              <TouchableOpacity style={styles.relatedProductItem}>
+                <Image source={item.imageUrl} style={styles.relatedProductImage} />
+                <Text style={styles.relatedProductTitle}>{item.title}</Text>
+              </TouchableOpacity>
             )}
-            keyExtractor={(item) => item.title}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-          />
-
-          <Text style={styles.reviewsTitle}>Đánh giá:</Text>
-          <FlatList
-            data={product.reviews}
-            renderItem={({ item }) => (
-              <View style={styles.reviewItem}>
-                <Text style={styles.reviewUser}>{item.user}:</Text>
-                <Text style={styles.reviewComment}>{item.comment}</Text>
-                <Text style={styles.reviewRating}>Rating: {item.rating} ★</Text>
-              </View>
-            )}
-            keyExtractor={(item) => item.user}
+            keyExtractor={(item) => item.id.toString()}
           />
         </View>
       </View>
@@ -147,316 +115,110 @@ const ProductDetail = ({ visible, onClose, product, onAddToCart }) => {
   );
 };
 
-const App = () => {
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [cart, setCart] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const openDetail = (product) => {
-    setSelectedProduct(product);
-    setModalVisible(true);
-  };
-
-  const closeDetail = () => {
-    setModalVisible(false);
-    setSelectedProduct(null);
-  };
-
-  const addToCart = (product, quantity) => {
-    const item = { ...product, quantity };
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((cartItem) => cartItem.id === item.id && cartItem.size === item.size);
-      if (existingItem) {
-        return prevCart.map((cartItem) =>
-          cartItem.id === item.id && cartItem.size === item.size
-            ? { ...cartItem, quantity: cartItem.quantity + quantity }
-            : cartItem
-        );
-      } else {
-        return [...prevCart, item];
-      }
-    });
-    closeDetail();
-  };
-
-  const cartCount = cart.reduce((total, item) => total + item.quantity, 0); // Calculate total quantity in cart
-
-  const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => openDetail(item)}>
-      <View style={styles.item}>
-        <Image source={item.imageUrl} style={styles.productImage} />
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.price}>{item.price}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const filteredProducts = DATA[0].products.filter(product =>
-    product.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Sản phẩm</Text>
-        <TouchableOpacity style={styles.cartButton}>
-          <Icon name="shopping-cart" size={30} color="#fff" />
-          {cartCount > 0 && (
-            <View style={styles.cartCountContainer}>
-              <Text style={styles.cartCountText}>{cartCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Tìm kiếm sản phẩm..."
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
-      <FlatList
-        data={filteredProducts}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-      />
-      {selectedProduct && (
-        <ProductDetail
-          visible={modalVisible}
-          onClose={closeDetail}
-          product={selectedProduct}
-          onAddToCart={addToCart}
-        />
-      )}
-    </SafeAreaView>
-  );
-};
-
 const styles = StyleSheet.create({
-  container: {
+  modalContainer: {
     flex: 1,
-    marginTop: StatusBar.currentHeight || 0,
-    backgroundColor: '#99CCFF',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#FF9999',
-  },
-  headerTitle: {
-    fontSize: 20,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  cartButton: {
-    padding: 10,
-    position: 'relative',
-  },
-  cartCountContainer: {
-    position: 'absolute',
-    right: -10,
-    top: -5,
-    backgroundColor: 'red',
-    borderRadius: 10,
-    width: 20,
-    height: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  cartCountText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-  searchInput: {
-    height: 40,
-    borderColor: '#000',
-    borderWidth: 1,
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#fff',
     borderRadius: 10,
-    paddingHorizontal: 10,
-    margin: 10,
-    backgroundColor: '#FFFFFF',
+    padding: 20,
+    alignItems: 'center',
   },
-  item: {
-    backgroundColor: '#80deea',
-    padding: 10,
-    margin: 10,
-    borderRadius: 10,
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
   },
   productImage: {
     width: '100%',
-    height: 120,
-    resizeMode: 'cover',
-    borderRadius: 10,
-    marginBottom: 5,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  price: {
-    fontSize: 14,
-    color: '#ff5722',
-    fontWeight: 'bold',
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: 20,
-  },
-  fullImage: {
-    width: '100%',
-    height: 300,
-    resizeMode: 'cover',
+    height: 200,
     borderRadius: 10,
   },
-  modalContent: {
-    padding: 20,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    marginTop: -50,
-    width: '100%',
-  },
-  productDetailTitle: {
+  productTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  modalTitle: {
-    fontSize: 22,
-    color: '#000000',
-    fontWeight: 'bold',
-  },
-  modalDescription: {
-    fontSize: 16,
-    color: '#000000',
-    marginVertical: 10,
-  },
-  modalAttributes: {
-    fontSize: 14,
-    color: '#000000',
-  },
-  modalSugar: {
-    fontSize: 14,
-    color: '#000000',
-  },
-  modalIce: {
-    fontSize: 14,
-    color: '#000000',
-  },
-  modalSize: {
-    fontSize: 14,
-    color: '#000000',
     marginTop: 10,
   },
-  sizeContainer: {
-    flexDirection: 'row',
+  productDescription: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
     marginVertical: 10,
   },
+  productPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ff5722',
+  },
+  sizeContainer: {
+    marginVertical: 15,
+    alignItems: 'center',
+  },
+  sizeLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   sizeButton: {
-    borderWidth: 1,
-    borderColor: '#00796b',
+    padding: 10,
+    margin: 5,
     borderRadius: 5,
-    padding: 5,
-    marginHorizontal: 5,
-    backgroundColor: '#ffffff', // Default background color
+    backgroundColor: '#eee',
   },
   selectedSizeButton: {
-    backgroundColor: '#ffeb3b', // Yellow background when selected
+    backgroundColor: '#ff5722',
   },
-  sizeText: {
-    color: '#00796b',
-  },
-  modalPrice: {
-    fontSize: 20,
-    color: '#ff5722',
-    fontWeight: 'bold',
-  },
-  modalButton: {
-    marginTop: 20,
-    backgroundColor: '#FF9999',
-    borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  addToCartButton: {
-    marginTop: 20,
-    backgroundColor: '#FF9999',
-    borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    marginLeft: 5,
+  sizeButtonText: {
+    color: '#000',
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
+    marginVertical: 15,
+  },
+  quantityButton: {
+    padding: 10,
+    backgroundColor: '#eee',
+    borderRadius: 5,
   },
   quantityText: {
-    fontSize: 18,
+    fontSize: 16,
     marginHorizontal: 10,
   },
-  relatedTitle: {
-    fontSize: 18,
-    color: '#000000',
-    marginTop: 10,
-    fontWeight: 'bold',
-  },
-  relatedItem: {
-    marginRight: 10,
+  addToCartButton: {
+    backgroundColor: '#ff5722',
+    borderRadius: 5,
+    padding: 15,
     alignItems: 'center',
   },
-  relatedImage: {
-    width: 100,
-    height: 100,
-    resizeMode: 'cover',
-    borderRadius: 10,
-    marginBottom: 5,
+  addToCartButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
-  relatedProduct: {
-    fontSize: 14,
-    color: '#000000',
-  },
-  reviewsTitle: {
-    fontSize: 18,
-    color: '#000000',
+  relatedProductsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
     marginTop: 20,
-    fontWeight: 'bold',
+    marginBottom: 10,
   },
-  reviewItem: {
-    backgroundColor: '#ffffff',
-    padding: 10,
+  relatedProductItem: {
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  relatedProductImage: {
+    width: 80,
+    height: 80,
     borderRadius: 5,
-    marginVertical: 5,
   },
-  reviewUser: {
-    fontWeight: 'bold',
-  },
-  reviewComment: {
-    marginVertical: 5,
-  },
-  reviewRating: {
-    color: '#ff5722',
-  },
-  button: {
-    backgroundColor: '#FF9999',
-    borderRadius: 5,
-    padding: 5,
-    marginHorizontal: 5,
+  relatedProductTitle: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 5,
   },
 });
 
-export default App;
+export default ProductDetail;

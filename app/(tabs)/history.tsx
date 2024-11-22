@@ -12,11 +12,9 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const App = () => {
+const CartScreen = () => {
   const [cart, setCart] = useState([
-    // { id: '1', title: 'Giày Balenciaga', price: '250.000 VNĐ', quantity: 2, imageUrl: require('../../assets/images/d1.jpg') },
     { id: '2', title: 'Giày Vans Trắng', price: '245.000 VNĐ', quantity: 1, imageUrl: require('../../assets/images/d2.jpg') },
-    // Add other products here...
   ]);
 
   const [name, setName] = useState('');
@@ -36,11 +34,9 @@ const App = () => {
       return;
     }
 
-    // Show success message
     setPaymentSuccess(true);
-    setTimeout(() => setPaymentSuccess(false), 3000); // Hide after 3 seconds
+    setTimeout(() => setPaymentSuccess(false), 3000);
 
-    // Clear cart and input fields
     setCart([]);
     setName('');
     setEmail('');
@@ -85,36 +81,40 @@ const App = () => {
 
       <Text style={styles.totalText}>Tổng tiền: {totalAmount.toLocaleString()} VNĐ</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Tên khách hàng"
-        value={name}
-        onChangeText={setName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Số điện thoại"
-        value={phone}
-        onChangeText={setPhone}
-        keyboardType="phone-pad"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Địa chỉ giao hàng"
-        value={shippingAddress}
-        onChangeText={setShippingAddress}
-      />
+      {/* Payment Section */}
+      <View style={styles.paymentContainer}>
+        <Text style={styles.totalTexts}>Thanh Toán (trực tiếp)</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Tên khách hàng"
+          value={name}
+          onChangeText={setName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Số điện thoại"
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Địa chỉ giao hàng"
+          value={shippingAddress}
+          onChangeText={setShippingAddress}
+        />
 
-      <TouchableOpacity onPress={handlePayment} style={styles.button}>
-        <Text style={styles.buttonText}>Xác Nhận Thanh Toán</Text>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={handlePayment} style={styles.button}>
+          <Text style={styles.buttonText}>Xác Nhận Thanh Toán</Text>
+        </TouchableOpacity>
+      </View>
 
       {paymentSuccess && (
         <View style={styles.successMessage}>
@@ -182,6 +182,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginVertical: 20,
   },
+  totalTexts: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 20,
+    color: 'red',
+  },
+  paymentContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+    backgroundColor: '#7934',
+  },
   input: {
     height: 50,
     borderColor: '#000',
@@ -206,4 +220,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default CartScreen;

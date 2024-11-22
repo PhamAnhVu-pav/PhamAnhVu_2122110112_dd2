@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import {
   SafeAreaView,
   View,
@@ -10,11 +11,29 @@ import {
   Image,
   TouchableOpacity,
   Alert,
+  ToastAndroid,
+  Platform,
   Dimensions,
+  ScrollView,
 } from 'react-native';
+import BannerList from './BannerList';
+import ProductDetail from './Cart';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-// Dữ liệu sản phẩm
-import Ionicons from 'react-native-vector-icons/Ionicons'; 
+const { width } = Dimensions.get('window');
+
+const BANNERS = [
+  require('../../assets/images/banner1.png'),
+  require('../../assets/images/banner2.png'),
+  require('../../assets/images/banner3.png'),
+];
+
+const relatedProductsArray = [
+  { id: 1, title: 'Nike lanes', imageUrl: require('../../assets/images/d3.jpg') },
+  { id: 2, title: 'Puma shoes', imageUrl: require('../../assets/images/d2.jpg') },
+  { id: 3, title: 'Relantedess', imageUrl: require('../../assets/images/d1.jpg') },
+];
+
 const DATA = [
   {
     id: 'category-1',
@@ -27,34 +46,13 @@ const DATA = [
         description: 'Mô tả cho sản phẩm giày chính hãng.',
         imageUrl: require('../../assets/images/d1.jpg'),
         price: '250.000 VNĐ',
-      },
-      {
-        id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-        title: 'Giày Vans Trắng',
-        description: 'Mô tả cho sản phẩm giày chính hãng.',
-        imageUrl: require('../../assets/images/d2.jpg'),
-        price: '260.000 VNĐ',
-      },
-      {
-        id: '58694a0f-3da1-471f-bd96-145571e29d72',
-        title: 'Giày Vans Đen',
-        description: 'Mô tả cho sản phẩm giày chính hãng.',
-        imageUrl: require('../../assets/images/d3.jpg'),
-        price: '255.000 VNĐ',
-      },
-      {
-        id: 'cafe4',
-        title: 'Giày Samba',
-        description: 'Mô tả cho sản phẩm giày chính hãng.',
-        imageUrl: require('../../assets/images/d4.jpg'),
-        price: '245.000 VNĐ',
+        brand: 'Balenciaga',
       },
     ],
   },
   {
-    id: 'category-2',
+    id: 'category-nike',
     title: 'Nike',
-    description: 'Danh sách sản phẩm Nike.',
     products: [
       {
         id: 'nike1',
@@ -62,20 +60,13 @@ const DATA = [
         description: 'Mô tả cho sản phẩm Nike chính hãng.',
         imageUrl: require('../../assets/images/d2.jpg'),
         price: '3.000.000 VNĐ',
-      },
-      {
-        id: 'nike2',
-        title: 'Nike Air Force 1',
-        description: 'Mô tả cho sản phẩm Nike chính hãng.',
-        imageUrl: require('../../assets/images/d1.jpg'),
-        price: '2.800.000 VNĐ',
+        brand: 'Nike',
       },
     ],
   },
   {
-    id: 'category-3',
+    id: 'category-adidas',
     title: 'Adidas',
-    description: 'Danh sách sản phẩm Adidas.',
     products: [
       {
         id: 'adidas1',
@@ -83,245 +74,282 @@ const DATA = [
         description: 'Mô tả cho sản phẩm Adidas chính hãng.',
         imageUrl: require('../../assets/images/d3.jpg'),
         price: '3.200.000 VNĐ',
-      },
-      {
-        id: 'adidas2',
-        title: 'Adidas Superstar',
-        description: 'Mô tả cho sản phẩm Adidas chính hãng.',
-        imageUrl: require('../../assets/images/d4.jpg'),
-        price: '2.500.000 VNĐ',
+        brand: 'Adidas',
       },
     ],
   },
   {
-    id: 'category-4',
+    id: 'category-puma',
     title: 'Puma',
-    description: 'Danh sách sản phẩm Puma.',
     products: [
       {
         id: 'puma1',
-        title: 'Puma RS-X',
-        description: 'Mô tả cho sản phẩm Puma chính hãng.',
-        imageUrl: require('../../assets/images/d1.jpg'),
-        price: '2.000.000 VNĐ',
-      },
-      {
-        id: 'puma2',
-        title: 'Puma Suede Classic',
-        description: 'Mô tả cho sản phẩm Puma chính hãng.',
-        imageUrl: require('../../assets/images/d2.jpg'),
-        price: '1.800.000 VNĐ',
+        title: 'Puma Ultra Boost',
+        description: 'Mô tả cho sản phẩm Pumas chính hãng.',
+        imageUrl: require('../../assets/images/d4.jpg'),
+        price: '3.667.000 VNĐ',
+        brand: 'Puma',
       },
     ],
   },
 ];
 
-const Item = ({ title, description, imageUrl, price }) => {
-  const handleOrder = () => {
-    Alert.alert('Đặt hàng thành công', `Bạn đã đặt hàng: ${title}`);
+const App = () => {
+  const navigation = useNavigation();
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [bannerIndex, setBannerIndex] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState('Tất Cả Sản Phẩm');
+
+  const handleProductPress = (product) => {
+    setSelectedProduct(product);
+    setIsModalVisible(true);
   };
 
-  return (
-    <View style={styles.item}>
-      <Image source={imageUrl} style={styles.productImage} />
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
-      <Text style={styles.price}>{price}</Text>
-      <TouchableOpacity style={styles.orderButton} onPress={handleOrder}>
-        <Text style={styles.buttonText}>Đặt hàng</Text>
-      </TouchableOpacity>
+  const closeModal = () => {
+    setIsModalVisible(false);
+    setSelectedProduct(null);
+  };
+
+  const handleAddToCart = (product) => {
+    Alert.alert('Thêm vào giỏ hàng', `${product.title} đã được thêm vào giỏ hàng!`);
+    closeModal();
+  };
+
+  // Hàm hiển thị thông báo khi nhấn vào biểu tượng thông báo
+  const handleNotificationPress = () => {
+    console.log('Thông báo đã được nhấn');
+
+    if (Platform.OS === 'web') {
+      Alert.alert('Chúc mừng quý khách!');
+    } else if (Platform.OS === 'android') {
+      ToastAndroid.show('Chúc mừng quý khách!', ToastAndroid.SHORT);
+    } else {
+      Alert.alert('Thông báo', 'Chúc mừng quý khách!');
+    }
+  };
+
+  // Hàm hiển thị thông báo chào mừng quý khách
+  const showWelcomeMessage = () => {
+    console.log('Chào mừng quý khách đến với cửa hàng!'); // Log để kiểm tra
+    if (Platform.OS === 'android') {
+      ToastAndroid.show('Chào mừng quý khách đến với cửa hàng!', ToastAndroid.SHORT);
+    } else {
+      Alert.alert('Chào mừng', 'Chào mừng quý khách đến với cửa hàng!');
+    }
+  };
+
+  // Hiển thị thông báo chào mừng mỗi 3 giây
+  useEffect(() => {
+    const interval = setInterval(() => {
+      showWelcomeMessage();
+    }, 30);
+    return () => clearInterval(interval);
+  }, []);
+
+  const Item = ({ product }) => (
+    <TouchableOpacity onPress={() => handleProductPress(product)}>
+      <View style={styles.item}>
+        <Image
+          source={
+            product && product.imageUrl
+              ? (typeof product.imageUrl === 'string' ? { uri: product.imageUrl } : product.imageUrl)
+              : require('../../assets/images/n3.png')
+          }
+          style={styles.productImage}
+        />
+        <Text style={styles.title}>{product?.title || 'No Title'}</Text>
+        <Text style={styles.description}>{product?.description || 'No Description'}</Text>
+        <Text style={styles.price}>{product?.price || 'No Price'}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const CategoryFilter = ({ categories, onSelectCategory }) => (
+    <View style={styles.categoryFilter}>
+      {categories.map((category) => (
+        <TouchableOpacity
+          key={category.title}
+          style={styles.categoryButton}
+          onPress={() => onSelectCategory(category.title)}
+        >
+          <Image source={category.imageUrl} style={styles.categoryImage} />
+          <Text style={styles.categoryButtonText}>{category.title}</Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
-};
 
-const App = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBannerIndex((prevIndex) => (prevIndex + 1) % BANNERS.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const filteredCategories = DATA.filter(category =>
-    category.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const categories = [
+    { title: 'Tất Cả Sản Phẩm', imageUrl: require('../../assets/images/banner1.png') },
+    { title: 'Nike', imageUrl: require('../../assets/images/d2.jpg') },
+    { title: 'Adidas', imageUrl: require('../../assets/images/d3.jpg') },
+    { title: 'Puma', imageUrl: require('../../assets/images/d4.jpg') },
+  ];  const productsToDisplay = DATA.flatMap(category => category.products)
+    .filter(product =>
+      (selectedCategory === 'Tất Cả Sản Phẩm' ||
+        DATA.find(cat => cat.title === selectedCategory)?.products.includes(product)) &&
+      product.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.logoContainer}>
-        <Image
-          // source={require('../../assets/images/logocafe.png')}
-          // style={styles.logo}
-        />
-        <Text style={styles.header}>Welcome To My Shoe Store SHEEP SHOOP SHUUP</Text>
+        <Text style={styles.header}>SHEEP SHOOP SHUUP</Text>
+        
+        {/* Icon thông báo */}
+        <TouchableOpacity style={styles.notificationIconContainer} onPress={handleNotificationPress}>
+          <Icon name="notifications" size={30} color="#ff9800" />
+        </TouchableOpacity>
+
+        {/* Icon giỏ hàng */}
+        <TouchableOpacity style={styles.cartIconContainer} onPress={() => Alert.alert('Giỏ hàng')}>
+          <Icon name="shopping-cart" size={30} color="#00796b" />
+        </TouchableOpacity>
       </View>
+
       <View style={styles.searchContainer}>
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Tìm kiếm..."
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
-      {/* Cart Icon */}
-      <TouchableOpacity style={styles.iconButton} onPress={() => Alert.alert('Giỏ hàng của bạn')}>
-        <Ionicons name="cart" size={30} color="#000" />
-      </TouchableOpacity>
-      {/* Profile Icon */}
-      <TouchableOpacity style={styles.iconButton} onPress={() => Alert.alert('Trang cá nhân của bạn')}>
-        <Ionicons name="person" size={30} color="#000" />
-      </TouchableOpacity>
-    </View>
-      <Image
-        source={require('../../assets/images/banner2.png')}
-        style={styles.banner}
-      />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Tìm kiếm..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
+      <ScrollView>
+        <BannerList banners={BANNERS} />
+      </ScrollView>
+
+      <CategoryFilter categories={categories} onSelectCategory={setSelectedCategory} />
+
       <FlatList
-        data={filteredCategories}
-        keyExtractor={category => category.id}
-        renderItem={({ item: category }) => (
-          <View>
-            <Text style={styles.categoryTitle}>{category.title}</Text>
-            <FlatList
-              data={category.products}
-              renderItem={({ item }) => <Item {...item} />}
-              keyExtractor={item => item.id}
-              numColumns={2} // Số cột trong lưới
-              columnWrapperStyle={styles.row} // Thêm style cho hàng
-            />
-          </View>
-        )}
+        data={productsToDisplay}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => <Item product={item} />}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
       />
+      {isModalVisible && selectedProduct && (
+        <ProductDetail
+          visible={isModalVisible}
+          onClose={closeModal}
+          product={selectedProduct}
+          onAddToCart={handleAddToCart}
+          relatedProducts={relatedProductsArray}
+        />
+      )}
     </SafeAreaView>
   );
 };
-
-const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: StatusBar.currentHeight || 0,
-    backgroundColor: '#99CCFF',
+    backgroundColor: '#99CCF',
   },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    justifyContent: 'center',
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    resizeMode: 'contain',
-    marginRight: 10,
-  },
-  banner: {
-    width: '100%',
-    height: 280,
-    resizeMode: 'cover',
-    marginVertical: 10,
+    justifyContent: 'space-between',
   },
   header: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#00796b',
-    textAlign: 'center',
+    color: '#3f51b5',
+    marginRight: 'auto',
   },
-  contactContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    marginBottom: 10,
+  notificationIconContainer: {
+    marginLeft: 'auto',
+    marginRight: 20,
   },
-  hotline: {
-    fontSize: 16,
-    color: '#00796b',
+  cartIconContainer: {
+    marginRight: 20,
   },
-  address: {
-    fontSize: 16,
-    color: '#00796b',
+  searchContainer: {
+    padding: 10,
   },
   searchInput: {
     height: 40,
-    width:300,
-    borderColor: '#000',
+    borderColor: 'gray',
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 5,
     paddingHorizontal: 10,
-    marginHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: '#FFFFFF',
   },
-  categoryTitle: {
-    fontSize: 18,
+  categoryFilter: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
+    backgroundColor: '#f5f5f5',
+  },
+  categoryButton: {
+    padding: 10,
+  },
+  categoryButtonText: {
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#00796b',
-    margin: 10,
-    textAlign: 'center',
+    color: '#3f51b5',
+  },
+  row: {
+    justifyContent: 'space-between',
   },
   item: {
-    backgroundColor: '#80deea',
+    backgroundColor: '#fff',
+    borderRadius: 10,
     padding: 10,
     margin: 10,
-    borderRadius: 10,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3.5,
-    flex: 1, // Thêm để sử dụng không gian trong lưới
-    maxWidth: '45%', // Đảm bảo mỗi sản phẩm chiếm không quá 45% chiều rộng
+    flex: 1,
+    alignItems: 'center',
+    height: 220,
   },
   productImage: {
-    width: '100%', // Chiếm toàn bộ chiều rộng
+    width: width / 2 - 40,
     height: 120,
-    resizeMode: 'cover',
     borderRadius: 10,
-    marginBottom: 5,
   },
   title: {
     fontSize: 16,
-    color: '#004d40',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   description: {
     fontSize: 12,
-    color: '#555',
-    marginTop: 5,
+    color: 'gray',
   },
   price: {
     fontSize: 14,
-    color: '#ff5722',
     fontWeight: 'bold',
-    marginTop: 5,
+    color: '#f44336',
   },
-  orderButton: {
-    marginTop: 5,
-    backgroundColor: '#FF9999',
-    borderRadius: 5,
-    paddingVertical: 5,
-    alignItems: 'center',
-  },
-  cartButton: {
-    marginLeft: 20,
-  },
-  cartIcon: {
-    width: 30,
-    height: 30,
-    resizeMode: 'contain',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  searchContainer: {
+  categoryFilter: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
+    backgroundColor: '#f5f5f5',
+  },
+  categoryButton: {
     alignItems: 'center',
-    paddingHorizontal: 10,
-    marginBottom: 10,
   },
-  iconButton: {
-    marginLeft: 10,
+  categoryImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginBottom: 5,
   },
-  row: {
-    justifyContent: 'space-between', // Chỉnh lại để mỗi hàng có khoảng cách đều nhau
+  categoryButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#3f51b5',
+    textAlign: 'center',
   },
 });
 
 export default App;
-//doan code 

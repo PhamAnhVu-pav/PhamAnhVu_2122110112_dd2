@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, Button, Alert, Image, TouchableOpacity } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 
-// Thành phần hiển thị hình ảnh
+// Component to display images
 const DisplayAnImage = () => {
   return (
     <View style={styles.imageContainer}>
@@ -19,7 +18,7 @@ const DisplayAnImage = () => {
   );
 };
 
-// Thành phần màn hình chính
+// Main screen component
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [username, setUsername] = useState('');
@@ -35,7 +34,7 @@ export default function HomeScreen() {
   const handleLogin = () => {
     if (username && password) {
       Alert.alert('Đăng Nhập Thành Công', `Tên người dùng: ${username}`);
-      navigation.navigate('page'); // Điều hướng sang màn hình chính
+      navigation.navigate('page'); // Navigate to main screen
       setUsername('');
       setPassword('');
     } else {
@@ -70,7 +69,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <DisplayAnImage /> {/* Hiển thị hình ảnh */}
+      <DisplayAnImage /> {/* Display images */}
 
       <View style={styles.formContainer}>
         {isForgotPassword ? (
@@ -82,6 +81,8 @@ export default function HomeScreen() {
                 placeholder="Email"
                 value={forgotEmail}
                 onChangeText={setForgotEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
             </View>
             <Button title="Khôi Phục Mật Khẩu" onPress={handleForgotPassword} color="#007BFF" />
@@ -104,6 +105,8 @@ export default function HomeScreen() {
                 placeholder="Email"
                 value={registerEmail}
                 onChangeText={setRegisterEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
               <TextInput
                 style={styles.input}
@@ -174,41 +177,41 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
-    height: 60, // Tăng chiều cao của trường nhập liệu
+    height: 60, // Increased height of input fields
     borderColor: '#FF8C00',
     borderWidth: 1,
-    borderRadius: 10, // Tăng góc bo tròn của trường nhập liệu
-    paddingHorizontal: 20, // Tăng padding bên trong trường nhập liệu
-    marginBottom: 20, // Tăng khoảng cách giữa các trường nhập liệu
+    borderRadius: 10, // Increased border radius of input fields
+    paddingHorizontal: 20, // Increased padding inside input fields
+    marginBottom: 20, // Increased spacing between input fields
   },
   imageContainer: {
-    alignItems: 'center', // Căn giữa các hình ảnh
-    marginBottom: 30, // Tăng khoảng cách giữa hình ảnh và phần còn lại
+    alignItems: 'center', // Center images
+    marginBottom: 30, // Increased spacing between images and other content
   },
   tinyLogo: {
-    width: 160, // Tăng kích thước hình ảnh nhỏ
+    width: 160, // Increased size of small image
     height: 130,
     marginBottom: 15,
   },
   logo: {
-    width: 100, // Tăng kích thước hình ảnh lớn
-    height: 10,
+    width: 100, // Increased size of large image
+    height: 100, // Adjusted height for visibility
   },
   switchText: {
     color: 'blue',
     textAlign: 'center',
-    marginTop: 20, // Tăng khoảng cách giữa văn bản chuyển đổi và các phần khác
+    marginTop: 20, // Increased spacing between switch text and other elements
   },
   formContainer: {
-    backgroundColor: '#CCFFFF', // Màu nền của khung
-    padding: 40, // Tăng padding của khung
-    borderRadius: 25, // Tăng góc bo tròn của khung
+    backgroundColor: '#CCFFFF', // Background color of form container
+    padding: 40, // Increased padding of the form container
+    borderRadius: 25, // Increased border radius of the form container
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 6, // Chỉ dùng cho Android
-    maxWidth: 500, // Tăng chiều rộng tối đa cho khung
-    alignSelf: 'center', // Căn giữa khung
+    elevation: 6, // Only for Android
+    maxWidth: 500, // Increased max width for the form container
+    alignSelf: 'center', // Center the form container
   },
 });
